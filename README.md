@@ -7,3 +7,4 @@
 - Brian Cha
 - Chau Vu
 - My Nguyen
+- Angela Zhou
