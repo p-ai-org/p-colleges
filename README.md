@@ -8,3 +8,4 @@
 - Chau Vu
 - My Nguyen
 - Angela Zhou
+- Sonya Deng
