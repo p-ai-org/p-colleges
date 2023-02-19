@@ -1,7 +1,7 @@
 # p-colleges
 
-Collaborators:
+### Collaborators
 
--Tilo Reneau-Cardoso
--Aser
--Brian Cha
+- Tilo Reneau-Cardoso
+- Aser
+- Brian Cha
