@@ -9,3 +9,4 @@
 - My Nguyen
 - Angela Zhou
 - Sonya Deng
+- Anjali Nuggehalli
