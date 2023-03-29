@@ -2,35 +2,70 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import json
+import time
+import os
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# 6049
+# 6048: no rating
 
 
 class RMPScraperByID:
 
+    stats = {}
+
     def __init__(self, schoolID):
         self.schoolID = schoolID
         self.html = self.__scraper()
-        self.stats = {}
         self.schoolName = ""
         self.__getStats()
 
     def __str__(self):
-        return str(self.stats)
+        return str(RMPScraperByID.stats)
 
     def makeJson(self):
-        json_str = json.dumps(self.stats)
-        name = ""
-        for college in self.stats.keys():
-            name = str(college)
-        with open(f"{name}.json", "w") as outfile:
+        json_str = json.dumps(RMPScraperByID.stats)
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        json_file_path = os.path.join(dir_path, 'all_colleges.json')
+
+        with open(json_file_path, "a") as outfile:
             outfile.write(json_str)
 
     def __scraper(self):
+        driver = webdriver.Chrome()
+        driver.maximize_window()
+
         url = f"https://www.ratemyprofessors.com/school?sid={str(self.schoolID)}"
 
-        response = requests.get(url)
-        html = response.text
+        driver.get(url)
+
+        # time.sleep(2)
+        # EC.element_to_be_clickable((By.XPATH, '''/html/body/div[5]/div/div/button'''))
+
+        for _ in range(3):
+            print("NEW ATTEMPT")
+            try:
+                # show_more_button = WebDriverWait(driver, 10).until(
+                #     EC.element_to_be_clickable((By.XPATH, '''//a[@class='Buttons__Button-sc-19xdot-1 PaginationButton__StyledPaginationButton-txi1dr-1 gjQZal']'''))
+                # )
+                # show_more_button.click()
+                loadMoreButton = driver.find_element_by_xpath("//button[contains(@aria-label,'Show More')]")
+                time.sleep(1)
+                loadMoreButton.click()
+
+                time.sleep(2)
+            except:
+                print("YOU MESSED UP")
+                break
+
+        html = driver.page_source
 
         soup = BeautifulSoup(html, "html.parser")
+        driver.quit()
+
         return soup
 
     def __getStats(self):
@@ -40,32 +75,35 @@ class RMPScraperByID:
     def __getSchoolStats(self):
         self.schoolName = self.html.find("div", {
             "class": "HeaderDescription__StyledTitleName-sc-1lt205f-1 eNxccF"}).text.strip()
-        self.stats[self.schoolName] = {}
+        RMPScraperByID.stats[self.schoolName] = {}
 
-        self.stats[self.schoolName]["School_Overall"] = float(self.html.find(
-            "div", {"class": "OverallRating__Number-y66epv-3 dXoyqn"}).text.strip())
-        self.stats[self.schoolName]["School_Reputation"] = float(self.html.find(
-            "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Reputation").find_next_sibling().text.strip())
-        self.stats[self.schoolName]["School_Location"] = float(self.html.find(
-            "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Location").find_next_sibling().text.strip())
-        self.stats[self.schoolName]["School_Facilities"] = float(self.html.find(
-            "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Facilities").find_next_sibling().text.strip())
-        self.stats[self.schoolName]["School_Food"] = float(self.html.find(
-            "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Food").find_next_sibling().text.strip())
-        self.stats[self.schoolName]["School_Happiness"] = float(self.html.find(
-            "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Happiness").find_next_sibling().text.strip())
-        self.stats[self.schoolName]["School_Opportunities"] = float(self.html.find(
-            "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Opportunities").find_next_sibling().text.strip())
-        self.stats[self.schoolName]["School_Clubs"] = float(self.html.find(
-            "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Clubs").find_next_sibling().text.strip())
-        self.stats[self.schoolName]["School_Safety"] = float(self.html.find(
-            "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Safety").find_next_sibling().text.strip())
-        self.stats[self.schoolName]["School_Social"] = float(self.html.find(
-            "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Social").find_next_sibling().text.strip())
-        self.stats[self.schoolName]["School_Internet"] = float(self.html.find(
-            "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Internet").find_next_sibling().text.strip())
+        try:
+            RMPScraperByID.stats[self.schoolName]["School_Overall"] = float(self.html.find(
+                "div", {"class": "OverallRating__Number-y66epv-3 dXoyqn"}).text.strip())
+            RMPScraperByID.stats[self.schoolName]["School_Reputation"] = float(self.html.find(
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Reputation").find_next_sibling().text.strip())
+            RMPScraperByID.stats[self.schoolName]["School_Location"] = float(self.html.find(
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Location").find_next_sibling().text.strip())
+            RMPScraperByID.stats[self.schoolName]["School_Facilities"] = float(self.html.find(
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Facilities").find_next_sibling().text.strip())
+            RMPScraperByID.stats[self.schoolName]["School_Food"] = float(self.html.find(
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Food").find_next_sibling().text.strip())
+            RMPScraperByID.stats[self.schoolName]["School_Happiness"] = float(self.html.find(
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Happiness").find_next_sibling().text.strip())
+            RMPScraperByID.stats[self.schoolName]["School_Opportunities"] = float(self.html.find(
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Opportunities").find_next_sibling().text.strip())
+            RMPScraperByID.stats[self.schoolName]["School_Clubs"] = float(self.html.find(
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Clubs").find_next_sibling().text.strip())
+            RMPScraperByID.stats[self.schoolName]["School_Safety"] = float(self.html.find(
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Safety").find_next_sibling().text.strip())
+            RMPScraperByID.stats[self.schoolName]["School_Social"] = float(self.html.find(
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Social").find_next_sibling().text.strip())
+            RMPScraperByID.stats[self.schoolName]["School_Internet"] = float(self.html.find(
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Internet").find_next_sibling().text.strip())
 
-        self.stats[self.schoolName]["Comments"] = {}
+            RMPScraperByID.stats[self.schoolName]["Comments"] = {}
+        except:
+            print("no reviews")
 
     def __extract_comment(self, text):
         pattern = r'SchoolRating__RatingComment[^>]*>([^<]*)'
@@ -129,23 +167,24 @@ class RMPScraperByID:
             'div', class_='SchoolRating__SchoolRatingContainer-sb9dsm-0 inMLDw')
         for rating in ratings:
             comment = self.__extract_comment(str(rating))
-            self.stats[self.schoolName]["Comments"][comment] = {}
+            RMPScraperByID.stats[self.schoolName]["Comments"][comment] = {}
 
             review_date = self.__extract_review_date(str(rating))
-            self.stats[self.schoolName]["Comments"][comment]["Comment_Date"] = review_date
+            RMPScraperByID.stats[self.schoolName]["Comments"][comment]["Comment_Date"] = review_date
 
             overall_score = self.__extract_awesomeScore(str(rating))
-            self.stats[self.schoolName]["Comments"][comment]["Comment_Overall"] = float(overall_score)
+            RMPScraperByID.stats[self.schoolName]["Comments"][comment]["Comment_Overall"] = float(
+                overall_score)
 
             metrics, scores = self.__extract_review_metric_and_score(rating)
 
             for metric, score in zip(metrics, scores):
-                self.stats[self.schoolName]["Comments"][comment][metric] = score
+                RMPScraperByID.stats[self.schoolName]["Comments"][comment][metric] = score
 
 
 def main():
-    USC = RMPScraperByID("1381")
-    USC.makeJson()
+    school1 = RMPScraperByID("1075")
+    school1.makeJson()
 
 
 if __name__ == "__main__":
