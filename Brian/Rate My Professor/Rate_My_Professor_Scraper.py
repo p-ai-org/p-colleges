@@ -29,7 +29,7 @@ class RMPScraperByID:
     def makeJson(self):
         json_str = json.dumps(RMPScraperByID.stats)
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        json_file_path = os.path.join(dir_path, 'all_colleges.json')
+        json_file_path = os.path.join(dir_path, 'all_colleges_RMP.json')
 
         with open(json_file_path, "a") as outfile:
             outfile.write(json_str)
