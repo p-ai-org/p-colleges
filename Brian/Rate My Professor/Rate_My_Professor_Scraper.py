@@ -42,23 +42,20 @@ class RMPScraperByID:
 
         driver.get(url)
 
-        # time.sleep(2)
-        # EC.element_to_be_clickable((By.XPATH, '''/html/body/div[5]/div/div/button'''))
+        time.sleep(2)
+        # closes the "close" button
+        close_button = driver.find_element(
+            by=By.XPATH, value="//button[@class='Buttons__Button-sc-19xdot-1 CCPAModal__StyledCloseButton-sc-10x9kq-2 gvGrz']")
+        close_button.click()
 
+        # clicks show more button 3 times
         for _ in range(3):
-            print("NEW ATTEMPT")
             try:
-                # show_more_button = WebDriverWait(driver, 10).until(
-                #     EC.element_to_be_clickable((By.XPATH, '''//a[@class='Buttons__Button-sc-19xdot-1 PaginationButton__StyledPaginationButton-txi1dr-1 gjQZal']'''))
-                # )
-                # show_more_button.click()
-                loadMoreButton = driver.find_element_by_xpath("//button[contains(@aria-label,'Show More')]")
-                time.sleep(1)
-                loadMoreButton.click()
-
+                show_more_button = driver.find_element(
+                    by=By.XPATH, value='//button[@class="Buttons__Button-sc-19xdot-1 PaginationButton__StyledPaginationButton-txi1dr-1 gjQZal"]')
+                show_more_button.click()
                 time.sleep(2)
             except:
-                print("YOU MESSED UP")
                 break
 
         html = driver.page_source
@@ -183,8 +180,10 @@ class RMPScraperByID:
 
 
 def main():
-    school1 = RMPScraperByID("1075")
-    school1.makeJson()
+    for i in range(1, 3):
+        school = RMPScraperByID(i)
+
+    school.makeJson()
 
 
 if __name__ == "__main__":
