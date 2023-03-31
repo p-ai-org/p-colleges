@@ -8,6 +8,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import csv
 
 '''
 EXAMPLE
@@ -66,7 +67,7 @@ class UnigoScraper:
         driver.get(url)
 
         # clicks show more button 5 times
-        for _ in range(1):
+        for _ in range(3):
             try:
                 show_more_button = driver.find_element(
                     by=By.XPATH, value="//*[text()='Load More Reviews']")
@@ -218,7 +219,7 @@ class UnigoScraper:
     def getFAQNameAndComment(self, soup, question):
         reviews = soup.find_all(
             'div', class_='overall-college-user-review-container')
-            
+
         for review in reviews:
             name = review.find('strong').text
             comment = review.find('p').text
@@ -226,11 +227,28 @@ class UnigoScraper:
             UnigoScraper.stats[self.schoolName]["FAQ"][question][name] = comment
 
 
-
 def main():
-    school = UnigoScraper("University of California-Los Angeles")
+    filename = "AllCampus.csv"
+    counter = 0
+
+    with open(filename, "r") as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if counter < 3:
+                counter += 1
+                # print(''.join(row))
+                try:
+                    school = UnigoScraper(''.join(row))
+                except:
+                    continue
+            else:
+                break
 
     school.makeJson()
+
+    # school = UnigoScraper("University of California-Los Angeles")
+
+    # school.makeJson()
 
 
 if __name__ == "__main__":
