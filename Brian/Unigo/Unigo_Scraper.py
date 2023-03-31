@@ -66,7 +66,7 @@ class UnigoScraper:
         driver.get(url)
 
         # clicks show more button 5 times
-        for _ in range(5):
+        for _ in range(1):
             try:
                 show_more_button = driver.find_element(
                     by=By.XPATH, value="//*[text()='Load More Reviews']")
@@ -99,41 +99,28 @@ class UnigoScraper:
         UnigoScraper.stats[self.schoolName]["FAQ"] = {}
 
     def __getFAQStats(self):
-        FAQ_url = [f"https://www.unigo.com/colleges/{self.schoolWebName}/describe-a-typical-weekend",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/describe-how-your-school-looks-to-someone-whos-never-seen-it",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/describe-the-best-and-worst-parts-of-the-social-scene-on-campus",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/describe-the-dorms",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/describe-the-students-at-your-school",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/describe-your-favorite-campus-traditions",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/heres-your-chance-say-anything-about-your-college",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/is-the-stereotype-of-students-at-your-school-accurate",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/tell-us-about-the-food-and-dining-options",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/tell-us-about-the-sports-scene-on-campus",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/tell-us-about-your-professors",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/what-are-the-academics-like-at-your-school",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/what-are-the-most-popular-classes-offered",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/what-are-the-most-popular-student-activities-groups",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/what-are-your-classes-like",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/what-do-students-complain-about-most",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/what-is-the-stereotype-of-students-at-your-school",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/what-is-your-overall-opinion-of-this-school",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/what-should-every-freshman-at-your-school-know-before-they-start",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/whats-the-dating-scene-like",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/whats-the-greek-scene-like",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/whats-unique-about-your-campus",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/when-you-step-off-campus-what-do-you-see",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/where-is-the-best-place-to-get-work-done-on-campus",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/why-did-you-decide-to-go-to-this-school",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/what-is-the-stereotype-of-students-at-your-school-is-this-stereotype-accurate",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/whats-the-one-thing-you-wish-someone-had-told-you-about-freshman-year",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/whats-the-hardest-thing-about-freshman-year",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/i-dont-drink-will-it-be-hard-for-me-to-go-to-parties",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/how-often-should-i-phone-home-is-once-a-day-too-much",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/what-do-you-consider-the-worst-thing-about-your-school-why",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/what-kind-of-person-should-attend-this-school",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/what-kind-of-person-should-not-attend-this-school",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/what-do-you-brag-about-most-when-you-tell-your-friends-about-your-school",
-                   f"https://www.unigo.com/colleges/{self.schoolWebName}/whats-the-most-frustrating-thing-about-your-school"]
+
+        FAQ_url = []
+
+        # read_all_link = self.html.find(
+        #     "a", text=lambda text: "Read all" in text, href=True)
+
+        for link in self.html.find_all('a'):
+            if 'Read all' in link.text:
+
+                read_all_link = link.get('href')
+                break
+
+        link = "https://www.unigo.com" + read_all_link
+        response = requests.get(link)
+        soup = BeautifulSoup(response.content, "html.parser")
+
+        select_tag = soup.find("select", {"id": "schoolQuestionSelect"})
+        if select_tag:
+            option_tags = select_tag.find_all("option")
+            for option in option_tags:
+                value = option["value"]
+                FAQ_url.append("https://www.unigo.com" + value)
 
         for url in FAQ_url:
             try:
@@ -142,11 +129,9 @@ class UnigoScraper:
                 response = requests.get(url)
                 soup = BeautifulSoup(response.content, "html.parser")
 
-                UnigoScraper.stats[self.schoolName]["FAQ"] = {}
                 question = self.getFAQQuestion(soup)
-                UnigoScraper.stats[self.schoolName]["FAQ"][question] = {}
-                name, comment = self.getFAQNameAndComment(soup)
-                UnigoScraper.stats[self.schoolName]["FAQ"][question][name] = comment
+                self.getFAQNameAndComment(soup, question)
+                # UnigoScraper.stats[self.schoolName]["FAQ"][question][name] = comment
             except:
                 continue
 
@@ -226,20 +211,20 @@ class UnigoScraper:
     def getFAQQuestion(self, soup):
         header_div = soup.find(
             "div", class_="college-review-question-header-container")
-        question = header_div.find("h2")
-        return question.text
+        question = header_div.find("h2").text
+        UnigoScraper.stats[self.schoolName]["FAQ"][question] = {}
+        return question
 
-    def getFAQNameAndComment(self, soup):
+    def getFAQNameAndComment(self, soup, question):
         reviews = soup.find_all(
             'div', class_='overall-college-user-review-container')
-        names = []
-        comments = []
-
+            
         for review in reviews:
-            names.append(review.find('strong').text)
-            comments.append(review.find('p').text)
+            name = review.find('strong').text
+            comment = review.find('p').text
 
-        return names, comments
+            UnigoScraper.stats[self.schoolName]["FAQ"][question][name] = comment
+
 
 
 def main():
