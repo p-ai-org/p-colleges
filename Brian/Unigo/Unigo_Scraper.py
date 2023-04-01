@@ -42,8 +42,11 @@ class UnigoScraper:
 
     stats = {}
 
-    def __init__(self, schoolName):
+    def __init__(self, schoolName, scrapeOneSchool=False):
         self.schoolName = schoolName
+        self.scrapeOneSchool = scrapeOneSchool
+        if self.scrapeOneSchool:
+            UnigoScraper.stats = {}
         self.schoolWebName = self.schoolName.replace(" ", "-").lower()
         self.html = self.__scraper()
         self.__getStats()
@@ -54,7 +57,10 @@ class UnigoScraper:
     def makeJson(self):
         json_str = json.dumps(UnigoScraper.stats)
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        json_file_path = os.path.join(dir_path, 'all_colleges_unigo.json')
+        if self.scrapeOneSchool:
+            json_file_path = os.path.join(dir_path, f'{self.schoolName}.json')
+        else:
+            json_file_path = os.path.join(dir_path, 'all_colleges_unigo.json')
 
         with open(json_file_path, "a") as outfile:
             outfile.write(json_str)
@@ -236,7 +242,6 @@ def main():
         for row in reader:
             if counter < 3:
                 counter += 1
-                # print(''.join(row))
                 try:
                     school = UnigoScraper(''.join(row))
                 except:
@@ -245,10 +250,6 @@ def main():
                 break
 
     school.makeJson()
-
-    # school = UnigoScraper("University of California-Los Angeles")
-
-    # school.makeJson()
 
 
 if __name__ == "__main__":

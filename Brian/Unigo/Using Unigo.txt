@@ -1,0 +1,38 @@
+How to use Unigo class.
+Currently, the class is configured such that the scraper will attempt to scrape ALL of the schools that are in Unigo's database.
+There is a csv called "AllCampus.csv", which contains all U.S. campuses (could be worldwide, not sure). 
+Unfortunately, Unigo doesn't use an "ID" system like RMP. Instead, their website for schools goes something like this:
+    https://www.unigo.com/colleges/university-of-southern-california
+Hence, the python script gets each name of the campus from the csv and replaces the spaces with dashes "-". And then it scrapes the website. 
+
+If you want to scrape a specific school, find its ID NUMBER using the Unigo website, and then run this command:
+    SCHOOL = RMPScraperByID(ID_NUM, scrapeOneSchool=True)
+    SCHOOL.makeJson()
+
+The output is a json file with the name SCHOOL.json. Here is an example json file (truncated)
+
+{
+    "University of California-Los Angeles" : {
+        "About" : "Founded in 1919, University of California-Los Angeles.",
+        "School Overall Score" : 4.5,
+        "School On-campus housing" : 3.4,
+        "School Off-campus housing" : 3.0,
+        "School Campus food" : 3.6,
+        "School Campus facilities" : 4.4,
+        "Individual Opinions" : {
+            "Anna" : {
+                "Rating" : 4
+                "Comment" : "UCLA is a great place"
+            }
+        }
+        "FAQ" : {
+            "Describe a typical weekend" : {
+                "Bernadette" : "It's pretty chill ngl"
+                "Bob" : "Hot California"
+            }
+        }
+    }
+}
+
+
+You can import this json as a dictionary in Python. All the data can be accessed!

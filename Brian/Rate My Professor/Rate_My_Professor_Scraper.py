@@ -9,16 +9,15 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-# 6049
-# 6048: no rating
-
-
 class RMPScraperByID:
 
     stats = {}
 
-    def __init__(self, schoolID):
+    def __init__(self, schoolID, scrapeOneSchool=False):
         self.schoolID = schoolID
+        self.scrapeOneSchool = scrapeOneSchool
+        if scrapeOneSchool:
+            RMPScraperByID.stats = {}
         self.html = self.__scraper()
         self.schoolName = ""
         self.__getStats()
@@ -29,8 +28,10 @@ class RMPScraperByID:
     def makeJson(self):
         json_str = json.dumps(RMPScraperByID.stats)
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        json_file_path = os.path.join(dir_path, 'all_colleges_RMP.json')
-
+        if self.scrapeOneSchool:
+            json_file_path = os.path.join(dir_path, f'{self.schoolName}.json')
+        else:
+            json_file_path = os.path.join(dir_path, 'all_colleges_RMP.json')
         with open(json_file_path, "a") as outfile:
             outfile.write(json_str)
 
@@ -180,10 +181,15 @@ class RMPScraperByID:
 
 
 def main():
+    # scraping ALL schools and putting it into one JSON file (called all_Colleges_RMP.json)
+    # I capped the number of schools to 3 (because otherwise it will take forever)
     for i in range(1, 3):
         school = RMPScraperByID(i)
-
     school.makeJson()
+
+    # scraping ONE SPECIFIC school and putting it into its own JSON file
+    UCLA = RMPScraperByID(1075, scrapeOneSchool=True)
+    UCLA.makeJson()
 
 
 if __name__ == "__main__":

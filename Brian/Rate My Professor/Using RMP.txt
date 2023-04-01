@@ -1,0 +1,43 @@
+How to use RMP class.
+Currently, the class is configured such that the scraper will attempt to scrape ALL of the schools that are in RMP's database.
+Schools are categorized by ID NUMBERS, starting from 1 to about 6500. 
+
+If you want to scrape a specific school, find its ID NUMBER using the RMP website, and then run this command:
+    SCHOOL = UnigoScraper(''.join(row), scrapeOneSchool=True)
+    SCHOOL.makeJson()
+
+The output is a json file with the name SCHOOL.json. Here is an example json file (truncated)
+
+{
+    "University of California Los Angeles (UCLA)": {
+        "School_Overall": 4.2,
+        "School_Reputation": 4.6,
+        "School_Location": 4.5,
+        "School_Facilities": 4.4,
+        "School_Food": 4.3,
+        "School_Happiness": 4.2,
+        "School_Opportunities": 4.2,
+        "School_Clubs": 4.2,
+        "School_Safety": 4.0,
+        "School_Social": 4.1,
+        "School_Internet": 4.0,
+        "Comments": {
+            "Great campus!" : {
+                "Comment_Date": "Mar 31st, 2023",
+                "Comment_Overall": 4.4,
+                "Comment_Reputation": 5,
+                "Comment_Location": 5,
+                "Comment_Opportunities": 4,
+                "Comment_Facilities": 5,
+                "Comment_Internet": 2,
+                "Comment_Food": 5,
+                "Comment_Clubs": 4,
+                "Comment_Social": 5,
+                "Comment_Happiness": 5,
+                "Comment_Safety": 4
+            }
+        }
+    }
+}
+
+You can import this json as a dictionary in Python. All the data can be accessed!
