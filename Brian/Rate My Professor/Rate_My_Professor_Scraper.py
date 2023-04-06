@@ -26,14 +26,22 @@ class RMPScraperByID:
         return str(RMPScraperByID.stats)
 
     def makeJson(self):
-        json_str = json.dumps(RMPScraperByID.stats)
+
         dir_path = os.path.dirname(os.path.realpath(__file__))
         if self.scrapeOneSchool:
             json_file_path = os.path.join(dir_path, f'{self.schoolName}.json')
         else:
             json_file_path = os.path.join(dir_path, 'all_colleges_RMP.json')
-        with open(json_file_path, "a") as outfile:
-            outfile.write(json_str)
+
+        # json_str = json.dumps(RMPScraperByID.stats[self.schoolName])
+        with open(json_file_path, 'r') as f:
+            data = json.load(f)
+
+        data[self.schoolName] = RMPScraperByID.stats[self.schoolName]
+
+
+        with open(json_file_path, "w") as f:
+            json.dump(data, f)
 
     def __scraper(self):
         driver = webdriver.Chrome()
@@ -79,25 +87,25 @@ class RMPScraperByID:
             RMPScraperByID.stats[self.schoolName]["School_Overall"] = float(self.html.find(
                 "div", {"class": "OverallRating__Number-y66epv-3 dXoyqn"}).text.strip())
             RMPScraperByID.stats[self.schoolName]["School_Reputation"] = float(self.html.find(
-                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Reputation").find_next_sibling().text.strip())
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, string="Reputation").find_next_sibling().text.strip())
             RMPScraperByID.stats[self.schoolName]["School_Location"] = float(self.html.find(
-                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Location").find_next_sibling().text.strip())
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, string="Location").find_next_sibling().text.strip())
             RMPScraperByID.stats[self.schoolName]["School_Facilities"] = float(self.html.find(
-                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Facilities").find_next_sibling().text.strip())
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, string="Facilities").find_next_sibling().text.strip())
             RMPScraperByID.stats[self.schoolName]["School_Food"] = float(self.html.find(
-                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Food").find_next_sibling().text.strip())
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, string="Food").find_next_sibling().text.strip())
             RMPScraperByID.stats[self.schoolName]["School_Happiness"] = float(self.html.find(
-                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Happiness").find_next_sibling().text.strip())
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, string="Happiness").find_next_sibling().text.strip())
             RMPScraperByID.stats[self.schoolName]["School_Opportunities"] = float(self.html.find(
-                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Opportunities").find_next_sibling().text.strip())
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, string="Opportunities").find_next_sibling().text.strip())
             RMPScraperByID.stats[self.schoolName]["School_Clubs"] = float(self.html.find(
-                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Clubs").find_next_sibling().text.strip())
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, string="Clubs").find_next_sibling().text.strip())
             RMPScraperByID.stats[self.schoolName]["School_Safety"] = float(self.html.find(
-                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Safety").find_next_sibling().text.strip())
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, string="Safety").find_next_sibling().text.strip())
             RMPScraperByID.stats[self.schoolName]["School_Social"] = float(self.html.find(
-                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Social").find_next_sibling().text.strip())
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, string="Social").find_next_sibling().text.strip())
             RMPScraperByID.stats[self.schoolName]["School_Internet"] = float(self.html.find(
-                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, text="Internet").find_next_sibling().text.strip())
+                "div", {"class": "CategoryGrade__CategoryTitle-sc-17vzv7e-1 XKroK"}, string="Internet").find_next_sibling().text.strip())
 
             RMPScraperByID.stats[self.schoolName]["Comments"] = {}
         except:
@@ -183,13 +191,19 @@ class RMPScraperByID:
 def main():
     # scraping ALL schools and putting it into one JSON file (called all_Colleges_RMP.json)
     # I capped the number of schools to 3 (because otherwise it will take forever)
-    for i in range(1, 3):
-        school = RMPScraperByID(i)
-    school.makeJson()
+    for i in range(33, 6050):
+        time.sleep(10)
+        print("College number", i)
+        try:
+            school = RMPScraperByID(i)
+            school.makeJson()
+        except:
+            print("whoops")
+            break
 
     # scraping ONE SPECIFIC school and putting it into its own JSON file
-    UCLA = RMPScraperByID(1075, scrapeOneSchool=True)
-    UCLA.makeJson()
+    # UCLA = RMPScraperByID(1075, scrapeOneSchool=True)
+    # UCLA.makeJson()
 
 
 if __name__ == "__main__":
