@@ -51,7 +51,7 @@ class RMPScraperByID:
 
         driver.get(url)
 
-        time.sleep(2)
+        time.sleep(3)
         # closes the "close" button
         close_button = driver.find_element(
             by=By.XPATH, value="//button[@class='Buttons__Button-sc-19xdot-1 CCPAModal__StyledCloseButton-sc-10x9kq-2 gvGrz']")
@@ -63,7 +63,7 @@ class RMPScraperByID:
                 show_more_button = driver.find_element(
                     by=By.XPATH, value='//button[@class="Buttons__Button-sc-19xdot-1 PaginationButton__StyledPaginationButton-txi1dr-1 gjQZal"]')
                 show_more_button.click()
-                time.sleep(2)
+                time.sleep(3)
             except:
                 break
 
@@ -79,8 +79,13 @@ class RMPScraperByID:
         self.__getCommentStats()
 
     def __getSchoolStats(self):
-        self.schoolName = self.html.find("div", {
-            "class": "HeaderDescription__StyledTitleName-sc-1lt205f-1 eNxccF"}).text.strip()
+        try:
+            self.schoolName = self.html.find("div", {
+                "class": "HeaderDescription__StyledTitleName-sc-1lt205f-1 eNxccF"}).text.strip()
+        except:
+            print("no school at all")
+            return
+
         RMPScraperByID.stats[self.schoolName] = {}
 
         try:
@@ -110,6 +115,7 @@ class RMPScraperByID:
             RMPScraperByID.stats[self.schoolName]["Comments"] = {}
         except:
             print("no reviews")
+            return
 
     def __extract_comment(self, text):
         pattern = r'SchoolRating__RatingComment[^>]*>([^<]*)'
@@ -169,37 +175,40 @@ class RMPScraperByID:
         return metrics, scores
 
     def __getCommentStats(self):
-        ratings = self.html.find_all(
-            'div', class_='SchoolRating__SchoolRatingContainer-sb9dsm-0 inMLDw')
-        for rating in ratings:
-            comment = self.__extract_comment(str(rating))
-            RMPScraperByID.stats[self.schoolName]["Comments"][comment] = {}
+        try:
+            ratings = self.html.find_all(
+                'div', class_='SchoolRating__SchoolRatingContainer-sb9dsm-0 inMLDw')
+            for rating in ratings:
+                comment = self.__extract_comment(str(rating))
+                RMPScraperByID.stats[self.schoolName]["Comments"][comment] = {}
 
-            review_date = self.__extract_review_date(str(rating))
-            RMPScraperByID.stats[self.schoolName]["Comments"][comment]["Comment_Date"] = review_date
+                review_date = self.__extract_review_date(str(rating))
+                RMPScraperByID.stats[self.schoolName]["Comments"][comment]["Comment_Date"] = review_date
 
-            overall_score = self.__extract_awesomeScore(str(rating))
-            RMPScraperByID.stats[self.schoolName]["Comments"][comment]["Comment_Overall"] = float(
-                overall_score)
+                overall_score = self.__extract_awesomeScore(str(rating))
+                RMPScraperByID.stats[self.schoolName]["Comments"][comment]["Comment_Overall"] = float(
+                    overall_score)
 
-            metrics, scores = self.__extract_review_metric_and_score(rating)
+                metrics, scores = self.__extract_review_metric_and_score(rating)
 
-            for metric, score in zip(metrics, scores):
-                RMPScraperByID.stats[self.schoolName]["Comments"][comment][metric] = score
+                for metric, score in zip(metrics, scores):
+                    RMPScraperByID.stats[self.schoolName]["Comments"][comment][metric] = score
+        except:
+            return
 
 
 def main():
     # scraping ALL schools and putting it into one JSON file (called all_Colleges_RMP.json)
     # I capped the number of schools to 3 (because otherwise it will take forever)
-    for i in range(33, 6050):
-        time.sleep(10)
+    for i in range(300, 6050):
+        time.sleep(5)
         print("College number", i)
         try:
             school = RMPScraperByID(i)
             school.makeJson()
         except:
             print("whoops")
-            break
+            
 
     # scraping ONE SPECIFIC school and putting it into its own JSON file
     # UCLA = RMPScraperByID(1075, scrapeOneSchool=True)
