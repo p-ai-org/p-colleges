@@ -55,15 +55,22 @@ class UnigoScraper:
         return str(UnigoScraper.stats)
 
     def makeJson(self):
-        json_str = json.dumps(UnigoScraper.stats)
+
         dir_path = os.path.dirname(os.path.realpath(__file__))
         if self.scrapeOneSchool:
             json_file_path = os.path.join(dir_path, f'{self.schoolName}.json')
         else:
-            json_file_path = os.path.join(dir_path, 'all_colleges_unigo.json')
+            json_file_path = os.path.join(dir_path, 'all_colleges_Unigo.json')
 
-        with open(json_file_path, "a") as outfile:
-            outfile.write(json_str)
+        # json_str = json.dumps(RMPScraperByID.stats[self.schoolName])
+        with open(json_file_path, 'r') as f:
+            data = json.load(f)
+
+        data[self.schoolName] = UnigoScraper.stats[self.schoolName]
+
+
+        with open(json_file_path, "w") as f:
+            json.dump(data, f)
 
     def __scraper(self):
         driver = webdriver.Chrome()
@@ -78,7 +85,7 @@ class UnigoScraper:
                 show_more_button = driver.find_element(
                     by=By.XPATH, value="//*[text()='Load More Reviews']")
                 show_more_button.click()
-                time.sleep(2)
+                time.sleep(4)
             except:
                 break
 
@@ -131,13 +138,12 @@ class UnigoScraper:
 
         for url in FAQ_url:
             try:
-                # TODO: FIX ME!
-                # print(url)
                 response = requests.get(url)
                 soup = BeautifulSoup(response.content, "html.parser")
 
                 question = self.getFAQQuestion(soup)
                 self.getFAQNameAndComment(soup, question)
+                time.sleep(4)
                 # UnigoScraper.stats[self.schoolName]["FAQ"][question][name] = comment
             except:
                 continue
@@ -234,21 +240,34 @@ class UnigoScraper:
 
 
 def main():
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(dir_path, "all_colleges_Unigo.json")
+
+    if not os.path.isfile(file_path):
+
+        data = {}
+        with open(file_path, "w") as f:
+            json.dump(data, f)
+
     # RUN THIS (MULTIPLE COLLEGES)
-    filename = "AllCampus.csv"
-    counter = 0
+    
+    filename = r"C:\Users\brian\Desktop\p-colleges\p-colleges\Brian\Unigo\FilteredCampus.csv"
+    counter = 1
 
     with open(filename, "r") as file:
         reader = csv.reader(file)
         for row in reader:
-            if counter < 3:
+            try:
+                print("School", counter, ''.join(row))
+                school = UnigoScraper(''.join(row))
                 counter += 1
-                try:
-                    school = UnigoScraper(''.join(row))
-                except:
-                    continue
-            else:
-                break
+                # if counter == 5:
+                #     break
+                time.sleep(5)
+            except:
+                print("Some sort of error")
+                time.sleep(30)
+                continue
 
     school.makeJson()
 
