@@ -28,7 +28,7 @@ EXAMPLE
         }
         "FAQ" : {
             "Describe a typical weekend" : {
-                "Bernadette" : "It's pretty chill ngl"
+                "Bernadette" : "It's pretty chill"
                 "Bob" : "Hot California"
             }
         }
@@ -234,6 +234,7 @@ class UnigoScraper:
 
 
 def main():
+    # RUN THIS (MULTIPLE COLLEGES)
     filename = "AllCampus.csv"
     counter = 0
 
@@ -250,6 +251,11 @@ def main():
                 break
 
     school.makeJson()
+
+
+    # OR THIS (ONE COLLEGE)
+    # school = UnigoScraper("University of Southern California")
+    # school.makeJson()
 
 
 if __name__ == "__main__":
