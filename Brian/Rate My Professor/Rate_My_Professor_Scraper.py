@@ -51,19 +51,19 @@ class RMPScraperByID:
 
         driver.get(url)
 
-        time.sleep(3)
-        # closes the "close" button
-        close_button = driver.find_element(
-            by=By.XPATH, value="//button[@class='Buttons__Button-sc-19xdot-1 CCPAModal__StyledCloseButton-sc-10x9kq-2 gvGrz']")
-        close_button.click()
+        # time.sleep(5)
+        # # closes the "close" button
+        # close_button = driver.find_element(
+        #     by=By.XPATH, value="//button[@class='Buttons__Button-sc-19xdot-1 CCPAModal__StyledCloseButton-sc-10x9kq-2 gvGrz']")
+        # close_button.click()
 
         # clicks show more button 3 times
         for _ in range(3):
             try:
+                time.sleep(4)
                 show_more_button = driver.find_element(
                     by=By.XPATH, value='//button[@class="Buttons__Button-sc-19xdot-1 PaginationButton__StyledPaginationButton-txi1dr-1 gjQZal"]')
                 show_more_button.click()
-                time.sleep(3)
             except:
                 break
 
@@ -200,14 +200,15 @@ class RMPScraperByID:
 def main():
     # scraping ALL schools and putting it into one JSON file (called all_Colleges_RMP.json)
     # I capped the number of schools to 3 (because otherwise it will take forever)
-    for i in range(300, 6050):
-        time.sleep(5)
+    for i in range(2358 , 6050):
         print("College number", i)
         try:
             school = RMPScraperByID(i)
             school.makeJson()
+            time.sleep(10)
         except:
             print("whoops")
+            time.sleep(120)
             
 
     # scraping ONE SPECIFIC school and putting it into its own JSON file
