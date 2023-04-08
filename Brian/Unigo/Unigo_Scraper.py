@@ -132,7 +132,7 @@ class UnigoScraper:
         for url in FAQ_url:
             try:
                 # TODO: FIX ME!
-                print(url)
+                # print(url)
                 response = requests.get(url)
                 soup = BeautifulSoup(response.content, "html.parser")
 
