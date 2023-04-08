@@ -1,7 +1,7 @@
 import os
 import json
 
-directory = "/Users/hmcuser/Desktop/p-colleges/Brian/Rate My Professor"
+directory = "CHANGE ME INTO YOUR DIRECTORY"
 
 combined_data = {}
 
