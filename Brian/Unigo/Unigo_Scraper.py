@@ -82,11 +82,13 @@ class UnigoScraper:
         # clicks show more button 5 times
         for _ in range(3):
             try:
+                time.sleep(3)
                 show_more_button = driver.find_element(
                     by=By.XPATH, value="//*[text()='Load More Reviews']")
-                show_more_button.click()
-                time.sleep(4)
-            except:
+                driver.execute_script("arguments[0].click();", show_more_button)
+                # show_more_button.click()
+            except Exception as e:
+                print("No load more", e)
                 break
 
         html = driver.page_source
@@ -100,53 +102,61 @@ class UnigoScraper:
         self.__getFAQStats()
 
     def __getSchoolStats(self):
-        UnigoScraper.stats[self.schoolName] = {}
-        UnigoScraper.stats[self.schoolName]["School About"] = self.aboutSchool(
-            self.html)
-        UnigoScraper.stats[self.schoolName]["School Overall Score"] = int(self.getOverallScore(
-            self.html))
-        self.seperateReviews(self.html)
-        UnigoScraper.stats[self.schoolName]["Individual Opinions"] = {}
+        try:
+            UnigoScraper.stats[self.schoolName] = {}
+            UnigoScraper.stats[self.schoolName]["School About"] = self.aboutSchool(
+                self.html)
+            UnigoScraper.stats[self.schoolName]["School Overall Score"] = int(self.getOverallScore(
+                self.html))
+            self.seperateReviews(self.html)
+            UnigoScraper.stats[self.schoolName]["Individual Opinions"] = {}
+        except:
+            return
 
     def __getCommentStats(self):
-        self.getIndividualOpinion(self.html)
-        UnigoScraper.stats[self.schoolName]["FAQ"] = {}
+        try:
+            self.getIndividualOpinion(self.html)
+            UnigoScraper.stats[self.schoolName]["FAQ"] = {}
+        except:
+            return
 
     def __getFAQStats(self):
+        try:
+            FAQ_url = []
 
-        FAQ_url = []
+            # read_all_link = self.html.find(
+            #     "a", text=lambda text: "Read all" in text, href=True)
 
-        # read_all_link = self.html.find(
-        #     "a", text=lambda text: "Read all" in text, href=True)
+            for link in self.html.find_all('a'):
+                if 'Read all' in link.text:
 
-        for link in self.html.find_all('a'):
-            if 'Read all' in link.text:
+                    read_all_link = link.get('href')
+                    break
 
-                read_all_link = link.get('href')
-                break
+            link = "https://www.unigo.com" + read_all_link
+            response = requests.get(link)
+            soup = BeautifulSoup(response.content, "html.parser")
 
-        link = "https://www.unigo.com" + read_all_link
-        response = requests.get(link)
-        soup = BeautifulSoup(response.content, "html.parser")
+            select_tag = soup.find("select", {"id": "schoolQuestionSelect"})
+            if select_tag:
+                option_tags = select_tag.find_all("option")
+                for option in option_tags:
+                    value = option["value"]
+                    FAQ_url.append("https://www.unigo.com" + value)
 
-        select_tag = soup.find("select", {"id": "schoolQuestionSelect"})
-        if select_tag:
-            option_tags = select_tag.find_all("option")
-            for option in option_tags:
-                value = option["value"]
-                FAQ_url.append("https://www.unigo.com" + value)
+            for url in FAQ_url:
+                try:
+                    response = requests.get(url)
+                    soup = BeautifulSoup(response.content, "html.parser")
 
-        for url in FAQ_url:
-            try:
-                response = requests.get(url)
-                soup = BeautifulSoup(response.content, "html.parser")
-
-                question = self.getFAQQuestion(soup)
-                self.getFAQNameAndComment(soup, question)
-                time.sleep(4)
-                # UnigoScraper.stats[self.schoolName]["FAQ"][question][name] = comment
-            except:
-                continue
+                    question = self.getFAQQuestion(soup)
+                    self.getFAQNameAndComment(soup, question)
+                    time.sleep(4)
+                    # UnigoScraper.stats[self.schoolName]["FAQ"][question][name] = comment
+                except:
+                    continue
+        except:
+            return
 
     def aboutSchool(self, soup):
         aboutSchoolStr = ""
@@ -251,7 +261,7 @@ def main():
 
     # RUN THIS (MULTIPLE COLLEGES)
     
-    filename = r"C:\Users\brian\Desktop\p-colleges\p-colleges\Brian\Unigo\FilteredCampus.csv"
+    filename = "/Users/hmcuser/Desktop/p-colleges/Brian/Unigo/FilteredCampus.csv"
     counter = 1
 
     with open(filename, "r") as file:
@@ -259,17 +269,20 @@ def main():
         for row in reader:
             try:
                 print("School", counter, ''.join(row))
-                school = UnigoScraper(''.join(row))
                 counter += 1
+
+                if counter > 529:
+                    school = UnigoScraper(''.join(row))
+                    school.makeJson()
                 # if counter == 5:
                 #     break
-                time.sleep(5)
-            except:
-                print("Some sort of error")
+                    time.sleep(5)
+            except Exception as e:
+                print("Some sort of error: ", e)
                 time.sleep(30)
                 continue
 
-    school.makeJson()
+    
 
 
     # OR THIS (ONE COLLEGE)
