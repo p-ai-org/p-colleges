@@ -271,7 +271,7 @@ def main():
                 print("School", counter, ''.join(row))
                 counter += 1
 
-                if counter > 3085:
+                if counter > 4049:
                     school = UnigoScraper(''.join(row))
                     school.makeJson()
                 # if counter == 5:
